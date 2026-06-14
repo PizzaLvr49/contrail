@@ -419,6 +419,17 @@ dependencies = [
 ]
 
 [[package]]
+name = "bevy-steamworks"
+version = "0.16.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "cd37df0eb6c8d94191ec467e6f600fae51ebf013290bf3eb4b1fc5d8c0645325"
+dependencies = [
+ "bevy_app",
+ "bevy_ecs",
+ "steamworks",
+]
+
+[[package]]
 name = "bevy_a11y"
 version = "0.18.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -2067,6 +2078,7 @@ name = "client"
 version = "0.1.0"
 dependencies = [
  "bevy",
+ "bevy-steamworks",
  "bevy_replicon",
  "bevy_replicon_renet2",
  "shared",
@@ -3056,7 +3068,7 @@ dependencies = [
  "vec_map",
  "wasm-bindgen",
  "web-sys",
- "windows 0.58.0",
+ "windows 0.61.3",
 ]
 
 [[package]]
@@ -5571,6 +5583,24 @@ name = "static_assertions"
 version = "1.1.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "a2eb9349b6444b326872e140eb1cf5e7c522154d69e7a0ffb0fb81c06b37543f"
+
+[[package]]
+name = "steamworks"
+version = "0.12.2"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "722f54c70818b8debdc25b18618b77a0a69fa280012c29e7904d32f9136299fc"
+dependencies = [
+ "bitflags 2.13.0",
+ "paste",
+ "steamworks-sys",
+ "thiserror 2.0.18",
+]
+
+[[package]]
+name = "steamworks-sys"
+version = "0.12.2"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "42862065c9e685d08cc3d9f6c609d4b46bd9684ec7e9420688eb979213469582"
 
 [[package]]
 name = "strict-num"
