@@ -1,5 +1,6 @@
 # Project Setup
-default: setup
+default:
+    @just -l
 
 # Configures env, db, and sqlx-cli
 setup: env db-up
