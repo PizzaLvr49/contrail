@@ -1,4 +1,4 @@
-# Aeronautica (pending name change)
+# Contrail
 
 ## setup
 

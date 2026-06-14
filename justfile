@@ -12,7 +12,7 @@ setup: env db-up
 env:
     #!/usr/bin/env bash
     if [ ! -f .env ]; then \
-        echo 'DATABASE_URL="postgres://postgres:1234@localhost:5432/aeronautica_dev"' > .env; \
+        echo 'DATABASE_URL="postgres://postgres:1234@localhost:5432/contrail_dev"' > .env; \
         echo "created .env file"; \
     else \
         echo ".env file already exists"; \
@@ -28,8 +28,8 @@ run-client:
 
 # Sets up the db with password 1234 for local dev
 db-up:
-    docker run --name aeronautica-postgres-dev \
-        -e POSTGRES_DB=aeronautica_dev \
+    docker run --name contrail-postgres-dev \
+        -e POSTGRES_DB=contrail_dev \
         -e POSTGRES_USER=postgres \
         -e POSTGRES_PASSWORD=1234 \
         -p 5432:5432 \
@@ -37,7 +37,7 @@ db-up:
 
 # Removes the db
 db-down:
-    docker rm -f aeronautica-postgres-dev
+    docker rm -f contrail-postgres-dev
 
 # Migrates the local db
 migrate:
