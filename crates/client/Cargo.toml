@@ -1,0 +1,19 @@
+[package]
+name = "client"
+version = "0.1.0"
+edition = "2024"
+
+[dependencies]
+bevy = { workspace = true, features = ["3d"] }
+bevy_replicon = { workspace = true, features = ["client"] }
+bevy_replicon_renet2 = { workspace = true, features = [
+    "native_transport",
+    "client",
+] }
+
+uuid = { workspace = true }
+
+shared = { path = "../shared" }
+
+[lints]
+workspace = true

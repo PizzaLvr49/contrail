@@ -3,14 +3,28 @@ use bevy_malek_async::prelude::*;
 use sqlx::PgPool;
 use uuid::Uuid;
 
+use bevy_replicon::prelude::*;
+use bevy_replicon_renet2::{
+    RenetChannelsExt, RepliconRenetPlugins,
+    netcode::{NativeSocket, NetcodeServerTransport, ServerAuthentication, ServerSetupConfig},
+    renet2::{ConnectionConfig, RenetServer},
+};
+use std::{
+    net::{SocketAddr, UdpSocket},
+    time::SystemTime,
+};
+
 fn main() {
     dotenvy::dotenv().ok();
 
     App::new()
         .add_plugins(DefaultPlugins)
         .add_plugins(AsyncPlugin)
+        .add_plugins(RepliconPlugins)
+        .add_plugins(RepliconRenetPlugins)
         .init_state::<AppState>()
         .add_systems(Startup, spawn_db_task)
+        .add_systems(OnEnter(AppState::InGame), start_replicon_server)
         .add_systems(Update, async_world_sync_point::<DbSyncPoint>)
         .run();
 }
@@ -47,7 +61,7 @@ async fn connect_and_seed(
     let pool = PgPool::connect(&url).await?;
     info!("Connected!");
 
-    sqlx::migrate!().run(&pool).await?;
+    sqlx::migrate!("../../migrations").run(&pool).await?;
 
     let player_id = Uuid::now_v7();
     let username = format!("Pilot_{}", &player_id.to_string()[8..16]);
@@ -71,6 +85,33 @@ async fn connect_and_seed(
             },
         )
         .await?;
+
+    Ok(())
+}
+
+fn start_replicon_server(mut commands: Commands, channels: Res<RepliconChannels>) -> Result<()> {
+    let bind_addr: SocketAddr = "127.0.0.1:5000".parse()?;
+
+    info!("Starting Replicon server on {}", bind_addr);
+
+    let server = RenetServer::new(ConnectionConfig::from_channels(
+        channels.server_configs(),
+        channels.client_configs(),
+    ));
+
+    let current_time = SystemTime::now().duration_since(SystemTime::UNIX_EPOCH)?;
+    let socket = UdpSocket::bind(bind_addr)?;
+    let server_config = ServerSetupConfig {
+        current_time,
+        max_clients: 60,
+        protocol_id: 0,
+        authentication: ServerAuthentication::Unsecure,
+        socket_addresses: vec![vec![bind_addr]],
+    };
+    let transport = NetcodeServerTransport::new(server_config, NativeSocket::new(socket)?)?;
+
+    commands.insert_resource(server);
+    commands.insert_resource(transport);
 
     Ok(())
 }
