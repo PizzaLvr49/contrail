@@ -1,18 +1,18 @@
 use bevy::{prelude::*, tasks::IoTaskPool};
 use bevy_malek_async::prelude::*;
 use sqlx::PgPool;
+use steamworks::{Client, Server, ServerMode};
 
+use bevy_renet2::steam::{AccessPermission, SteamServerConfig, SteamServerTransport};
 use bevy_replicon::prelude::*;
 use bevy_replicon_renet2::{
     RenetChannelsExt, RepliconRenetPlugins,
-    netcode::{NativeSocket, NetcodeServerTransport, ServerAuthentication, ServerSetupConfig},
     renet2::{ConnectionConfig, RenetServer},
 };
 use clap::Parser;
-use std::{
-    net::{SocketAddr, UdpSocket},
-    time::SystemTime,
-};
+use std::net::{IpAddr, SocketAddr};
+
+type Result<T> = std::result::Result<T, Box<dyn std::error::Error>>;
 
 #[derive(Parser, Debug, Resource)]
 #[command(author, version, about)]
@@ -45,8 +45,14 @@ fn main() {
         .add_plugins(RepliconRenetPlugins)
         .init_state::<AppState>()
         .add_systems(Startup, spawn_db_task)
-        .add_systems(OnEnter(AppState::InGame), start_replicon_server)
-        .add_systems(Update, async_world_sync_point::<DbSyncPoint>)
+        .add_systems(
+            Update,
+            (
+                async_world_sync_point::<DbSyncPoint>,
+                setup_steam_and_server.run_if(in_state(AppState::ConnectingSteam)),
+                run_steam_callbacks.run_if(in_state(AppState::Ready)),
+            ),
+        )
         .run();
 }
 
@@ -59,7 +65,8 @@ pub struct DatabasePool(pub PgPool);
 pub enum AppState {
     #[default]
     ConnectingDatabase,
-    InGame,
+    ConnectingSteam,
+    Ready,
 }
 
 fn spawn_db_task(async_world: Res<AsyncWorld>, args: Res<Args>) {
@@ -87,7 +94,7 @@ async fn setup_db(async_world: AsyncWorld, database_url: String) -> Result<()> {
             DbSyncPoint,
             |mut commands: Commands, mut next_state: ResMut<NextState<AppState>>| {
                 commands.insert_resource(DatabasePool(pool));
-                next_state.set(AppState::InGame);
+                next_state.set(AppState::ConnectingSteam);
             },
         )
         .await?;
@@ -95,33 +102,73 @@ async fn setup_db(async_world: AsyncWorld, database_url: String) -> Result<()> {
     Ok(())
 }
 
-fn start_replicon_server(
+#[derive(Resource)]
+pub struct SteamServerInstance {
+    pub server: Server,
+    pub client: Client,
+}
+
+fn setup_steam_and_server(
     mut commands: Commands,
     channels: Res<RepliconChannels>,
     args: Res<Args>,
-) -> Result<()> {
-    info!("Starting Replicon server on {}", args.server_addr);
+    mut state: ResMut<NextState<AppState>>,
+    steam_instance: Option<Res<SteamServerInstance>>,
+    mut frame_count: Local<u32>,
+) {
+    if steam_instance.is_none() {
+        info!("Starting Steamworks and Replicon server...");
 
-    let server = RenetServer::new(ConnectionConfig::from_channels(
-        channels.server_configs(),
-        channels.client_configs(),
-    ));
+        let IpAddr::V4(ipv4_addr) = args.server_addr.ip() else {
+            error!("Steamworks requires an IPv4 address, but an IPv6 address was provided.");
+            return;
+        };
 
-    let current_time = SystemTime::now().duration_since(SystemTime::UNIX_EPOCH)?;
-    let socket = UdpSocket::bind(args.server_addr)?;
+        match Server::init(ipv4_addr, 5000, 5001, ServerMode::NoAuthentication, "0") {
+            Ok((server, client)) => {
+                server.log_on_anonymous();
+                server.enable_heartbeats(true);
+                server.set_max_players(args.max_clients as i32);
 
-    let server_config = ServerSetupConfig {
-        current_time,
-        max_clients: args.max_clients,
-        protocol_id: args.protocol_id,
-        authentication: ServerAuthentication::Unsecure,
-        socket_addresses: vec![vec![args.server_addr]],
-    };
+                commands.insert_resource(SteamServerInstance { server, client });
+            }
+            Err(e) => {
+                error!("Steam init failed: {:?}", e);
+            }
+        }
+        return;
+    }
 
-    let transport = NetcodeServerTransport::new(server_config, NativeSocket::new(socket)?)?;
+    let instance = steam_instance.unwrap();
+    instance.server.run_callbacks();
+    *frame_count += 1;
 
-    commands.insert_resource(server);
-    commands.insert_resource(transport);
+    if *frame_count >= 20 {
+        let renet_server = RenetServer::new(ConnectionConfig::from_channels(
+            channels.server_configs(),
+            channels.client_configs(),
+        ));
 
-    Ok(())
+        let steam_config = SteamServerConfig {
+            max_clients: args.max_clients,
+            access_permission: AccessPermission::Public,
+        };
+
+        match SteamServerTransport::new(&instance.client, steam_config) {
+            Ok(transport) => {
+                commands.insert_resource(renet_server);
+                commands.insert_resource(transport);
+
+                state.set(AppState::Ready);
+                info!("Server is Ready!");
+            }
+            Err(e) => {
+                error!("Steam transport failed: {:?}", e);
+            }
+        }
+    }
+}
+
+fn run_steam_callbacks(server_instance: Res<SteamServerInstance>) {
+    server_instance.server.run_callbacks();
 }

@@ -1,5 +1,3 @@
-CREATE EXTENSION IF NOT EXISTS "uuid-ossp";
-
 CREATE TABLE players (
     steam_id BIGINT PRIMARY KEY,
     level INT NOT NULL DEFAULT 1,

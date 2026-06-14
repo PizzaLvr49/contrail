@@ -12,7 +12,7 @@ bevy_replicon_renet2 = { workspace = true, features = [
 ] }
 
 shared = { path = "../shared" }
-bevy-steamworks = { workspace = true }
+steamworks = { workspace = true }
 
 [lints]
 workspace = true

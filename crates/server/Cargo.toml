@@ -4,11 +4,13 @@ version = "0.1.0"
 edition = "2024"
 
 [dependencies]
+bevy_renet2 = { workspace = true }
+
 bevy = { workspace = true }
 bevy_replicon = { workspace = true, features = ["server"] }
 bevy_replicon_renet2 = { workspace = true, features = ["server"] }
 clap = { workspace = true }
-
+steamworks = { workspace = true }
 bevy_malek_async = { git = "https://github.com/MalekiRe/bevy_malek_async", branch = "backport-for-sheepman" }
 
 dotenvy = { workspace = true }
