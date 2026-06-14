@@ -25,12 +25,12 @@ env:
     fi
 
 # Runs the server
-run-server:
-    cargo run -p server
+run-server *args:
+    cargo run -p server -- {{args}}
 
 # Runs the client
-run-client:
-    cargo run -p client
+run-client *args:
+    cargo run -p client -- {{args}}
 
 # Starts the local PostgreSQL container
 db-up:
