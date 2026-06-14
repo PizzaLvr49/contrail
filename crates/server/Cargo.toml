@@ -7,6 +7,7 @@ edition = "2024"
 bevy = { workspace = true }
 bevy_replicon = { workspace = true, features = ["server"] }
 bevy_replicon_renet2 = { workspace = true, features = ["server"] }
+clap = { workspace = true }
 
 bevy_malek_async = { git = "https://github.com/MalekiRe/bevy_malek_async", branch = "backport-for-sheepman" }
 
