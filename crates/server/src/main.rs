@@ -119,7 +119,13 @@ fn init_steam_server(mut commands: Commands, args: Res<Args>) {
         return;
     };
 
-    match Server::init(ipv4_addr, 5000, 5001, ServerMode::NoAuthentication, "0") {
+    match Server::init(
+        ipv4_addr,
+        args.server_addr.port(),
+        args.server_addr.port() + 1,
+        ServerMode::NoAuthentication,
+        "0",
+    ) {
         Ok((server, client)) => {
             server.log_on_anonymous();
             server.enable_heartbeats(true);
