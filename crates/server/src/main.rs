@@ -44,17 +44,15 @@ fn spawn_db_task(async_world: Res<AsyncWorld>) {
     let async_world = async_world.clone();
     IoTaskPool::get()
         .spawn(async move {
-            if let Err(e) = connect_and_seed(async_world).await {
+            if let Err(e) = setup_db(async_world).await {
                 error!("Database setup failed: {e}");
             }
         })
         .detach();
 }
 
-async fn connect_and_seed(
-    async_world: AsyncWorld,
-) -> Result<(), Box<dyn std::error::Error + Send + Sync>> {
-    let url = std::env::var("DATABASE_URL").unwrap();
+async fn setup_db(async_world: AsyncWorld) -> Result<()> {
+    let url = std::env::var("DATABASE_URL")?;
 
     info!("Connecting to database...");
     let pool = PgPool::connect(&url).await?;
