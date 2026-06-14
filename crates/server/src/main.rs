@@ -47,7 +47,7 @@ fn main() {
             Update,
             (
                 async_world_sync_point::<DbSyncPoint>,
-                run_steam_callbacks.run_if(in_state(AppState::Ready)),
+                run_steam_callbacks.run_if(resource_exists::<SteamServerInstance>),
             ),
         )
         .add_systems(OnEnter(AppState::ConnectingSteam), init_steam_server)
@@ -147,7 +147,6 @@ fn init_transport_server(
     mut state: ResMut<NextState<AppState>>,
     instance: Res<SteamServerInstance>,
 ) {
-    instance.server.run_callbacks();
     info!("Initializing Replicon and Renet2 Transport...");
 
     let renet_server = RenetServer::new(ConnectionConfig::from_channels(
