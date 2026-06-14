@@ -12,8 +12,6 @@ use bevy_replicon_renet2::{
 use clap::Parser;
 use std::net::{IpAddr, SocketAddr};
 
-type Result<T> = std::result::Result<T, Box<dyn std::error::Error>>;
-
 #[derive(Parser, Debug, Resource)]
 #[command(author, version, about)]
 struct Args {
@@ -49,9 +47,13 @@ fn main() {
             Update,
             (
                 async_world_sync_point::<DbSyncPoint>,
-                setup_steam_and_server.run_if(in_state(AppState::ConnectingSteam)),
                 run_steam_callbacks.run_if(in_state(AppState::Ready)),
             ),
+        )
+        .add_systems(OnEnter(AppState::ConnectingSteam), init_steam_server)
+        .add_systems(
+            OnEnter(AppState::ConfiguringTransport),
+            init_transport_server,
         )
         .run();
 }
@@ -66,6 +68,7 @@ pub enum AppState {
     #[default]
     ConnectingDatabase,
     ConnectingSteam,
+    ConfiguringTransport,
     Ready,
 }
 
@@ -108,63 +111,59 @@ pub struct SteamServerInstance {
     pub client: Client,
 }
 
-fn setup_steam_and_server(
+fn init_steam_server(mut commands: Commands, args: Res<Args>) {
+    info!("Starting Steamworks...");
+
+    let IpAddr::V4(ipv4_addr) = args.server_addr.ip() else {
+        error!("Steamworks requires an IPv4 address, but an IPv6 address was provided.");
+        return;
+    };
+
+    match Server::init(ipv4_addr, 5000, 5001, ServerMode::NoAuthentication, "0") {
+        Ok((server, client)) => {
+            server.log_on_anonymous();
+            server.enable_heartbeats(true);
+            server.set_max_players(args.max_clients as i32);
+
+            commands.insert_resource(SteamServerInstance { server, client });
+            info!("Steamworks initialized successfully.");
+        }
+        Err(e) => {
+            error!("Steam init failed: {:?}", e);
+        }
+    }
+}
+
+fn init_transport_server(
     mut commands: Commands,
     channels: Res<RepliconChannels>,
     args: Res<Args>,
     mut state: ResMut<NextState<AppState>>,
-    steam_instance: Option<Res<SteamServerInstance>>,
-    mut frame_count: Local<u32>,
+    instance: Res<SteamServerInstance>,
 ) {
-    if steam_instance.is_none() {
-        info!("Starting Steamworks and Replicon server...");
-
-        let IpAddr::V4(ipv4_addr) = args.server_addr.ip() else {
-            error!("Steamworks requires an IPv4 address, but an IPv6 address was provided.");
-            return;
-        };
-
-        match Server::init(ipv4_addr, 5000, 5001, ServerMode::NoAuthentication, "0") {
-            Ok((server, client)) => {
-                server.log_on_anonymous();
-                server.enable_heartbeats(true);
-                server.set_max_players(args.max_clients as i32);
-
-                commands.insert_resource(SteamServerInstance { server, client });
-            }
-            Err(e) => {
-                error!("Steam init failed: {:?}", e);
-            }
-        }
-        return;
-    }
-
-    let instance = steam_instance.unwrap();
     instance.server.run_callbacks();
-    *frame_count += 1;
+    info!("Initializing Replicon and Renet2 Transport...");
 
-    if *frame_count >= 20 {
-        let renet_server = RenetServer::new(ConnectionConfig::from_channels(
-            channels.server_configs(),
-            channels.client_configs(),
-        ));
+    let renet_server = RenetServer::new(ConnectionConfig::from_channels(
+        channels.server_configs(),
+        channels.client_configs(),
+    ));
 
-        let steam_config = SteamServerConfig {
-            max_clients: args.max_clients,
-            access_permission: AccessPermission::Public,
-        };
+    let steam_config = SteamServerConfig {
+        max_clients: args.max_clients,
+        access_permission: AccessPermission::Public,
+    };
 
-        match SteamServerTransport::new(&instance.client, steam_config) {
-            Ok(transport) => {
-                commands.insert_resource(renet_server);
-                commands.insert_resource(transport);
+    match SteamServerTransport::new(&instance.client, steam_config) {
+        Ok(transport) => {
+            commands.insert_resource(renet_server);
+            commands.insert_resource(transport);
 
-                state.set(AppState::Ready);
-                info!("Server is Ready!");
-            }
-            Err(e) => {
-                error!("Steam transport failed: {:?}", e);
-            }
+            state.set(AppState::Ready);
+            info!("Server is Ready!");
+        }
+        Err(e) => {
+            error!("Steam transport failed: {:?}", e);
         }
     }
 }
