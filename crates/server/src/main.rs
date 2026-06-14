@@ -79,16 +79,16 @@ fn spawn_db_task(async_world: Res<AsyncWorld>, args: Res<Args>) {
     IoTaskPool::get()
         .spawn(async move {
             if let Err(e) = setup_db(async_world, database_url).await {
-                error!("Database setup failed: {e}");
+                error!("database setup failed: {e}");
             }
         })
         .detach();
 }
 
 async fn setup_db(async_world: AsyncWorld, database_url: String) -> Result<()> {
-    info!("Connecting to database...");
+    info!("connecting db");
     let pool = PgPool::connect(&database_url).await?;
-    info!("Connected!");
+    info!("connected to db");
 
     sqlx::migrate!("../../migrations").run(&pool).await?;
 
@@ -112,10 +112,10 @@ pub struct SteamServerInstance {
 }
 
 fn init_steam_server(mut commands: Commands, args: Res<Args>) {
-    info!("Starting Steamworks...");
+    info!("starting steamworks");
 
     let IpAddr::V4(ipv4_addr) = args.server_addr.ip() else {
-        error!("Steamworks requires an IPv4 address, but an IPv6 address was provided.");
+        error!("steamworks requires an IPv4 address");
         return;
     };
 
@@ -132,10 +132,10 @@ fn init_steam_server(mut commands: Commands, args: Res<Args>) {
             server.set_max_players(args.max_clients as i32);
 
             commands.insert_resource(SteamServerInstance { server, client });
-            info!("Steamworks initialized successfully.");
+            info!("steamworks initialized successfully");
         }
         Err(e) => {
-            error!("Steam init failed: {:?}", e);
+            error!("steam init failed: {:?}", e);
         }
     }
 }
@@ -147,7 +147,7 @@ fn init_transport_server(
     mut state: ResMut<NextState<AppState>>,
     instance: Res<SteamServerInstance>,
 ) {
-    info!("Initializing Replicon and Renet2 Transport...");
+    info!("initializing transport");
 
     let renet_server = RenetServer::new(ConnectionConfig::from_channels(
         channels.server_configs(),
