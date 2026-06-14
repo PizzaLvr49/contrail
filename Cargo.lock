@@ -2082,7 +2082,6 @@ dependencies = [
  "bevy_replicon",
  "bevy_replicon_renet2",
  "shared",
- "uuid",
 ]
 
 [[package]]
@@ -5161,7 +5160,6 @@ dependencies = [
  "dotenvy",
  "shared",
  "sqlx",
- "uuid",
 ]
 
 [[package]]

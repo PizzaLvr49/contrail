@@ -21,7 +21,6 @@ bevy_replicon_renet2 = { version = "0.17.0", features = [
 ], default-features = false }
 dotenvy = "0.15.7"
 sqlx = { version = "0.9.0", features = ["postgres", "runtime-smol", "uuid"] }
-uuid = { version = "1.23.3", features = ["v7"] }
 bevy-steamworks = "0.16.0"
 
 [profile.dev.package."*"]

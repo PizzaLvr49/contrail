@@ -11,8 +11,6 @@ bevy_replicon_renet2 = { workspace = true, features = [
     "client",
 ] }
 
-uuid = { workspace = true }
-
 shared = { path = "../shared" }
 bevy-steamworks = { workspace = true }
 

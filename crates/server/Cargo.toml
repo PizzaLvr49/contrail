@@ -12,6 +12,5 @@ bevy_malek_async = { git = "https://github.com/MalekiRe/bevy_malek_async", branc
 
 dotenvy = { workspace = true }
 sqlx = { workspace = true }
-uuid = { workspace = true }
 
 shared = { path = "../shared" }

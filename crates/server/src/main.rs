@@ -1,7 +1,6 @@
 use bevy::{prelude::*, tasks::IoTaskPool};
 use bevy_malek_async::prelude::*;
 use sqlx::PgPool;
-use uuid::Uuid;
 
 use bevy_replicon::prelude::*;
 use bevy_replicon_renet2::{
@@ -62,19 +61,6 @@ async fn connect_and_seed(
     info!("Connected!");
 
     sqlx::migrate!("../../migrations").run(&pool).await?;
-
-    let player_id = Uuid::now_v7();
-    let username = format!("Pilot_{}", &player_id.to_string()[8..16]);
-
-    sqlx::query!(
-        "INSERT INTO players (id, username) VALUES ($1, $2)",
-        player_id,
-        username
-    )
-    .execute(&pool)
-    .await?;
-
-    info!("Inserted {username}");
 
     async_world
         .bridge(
