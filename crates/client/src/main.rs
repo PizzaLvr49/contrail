@@ -20,7 +20,7 @@ fn main() -> AppExit {
 
 fn try_connect_to_server(steam_client: Res<SteamClient>) {
     let mut filters = HashMap::new();
-    // filters.insert("gametagsand", "contrail");
+    filters.insert("gametagsand", "contrail");
     let _request = steam_client
         .matchmaking_servers()
         .internet_server_list(

@@ -15,7 +15,7 @@ use bevy_replicon_renet2::{
 use clap::Parser;
 use std::net::{IpAddr, SocketAddr};
 
-#[derive(Parser, Debug, Resource)]
+#[derive(Parser, Resource)]
 #[command(author, version, about)]
 struct Args {
     /// Address to bind the game server to.
@@ -121,17 +121,16 @@ fn init_steam_server(
         args.server_addr.port(),
         args.server_addr.port() + 1,
         ServerMode::Authentication,
-        "0",
+        "1.0.0.0",
     ) {
         Ok((server, client)) => {
             server.set_product("Contrail");
             server.set_game_description("Contrail Flight Simulator");
-            server.set_mod_dir("contrail");
             server.set_game_tags("contrail");
             server.set_dedicated_server(true);
             server.log_on_anonymous();
-            server.enable_heartbeats(true);
             server.set_max_players(args.max_clients);
+            server.set_advertise_server_active(true);
 
             commands.insert_resource(SteamServer(server));
             commands.insert_resource(SteamClient(client));
