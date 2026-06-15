@@ -4,9 +4,8 @@ version = "0.1.0"
 edition = "2024"
 
 [dependencies]
-bevy_renet2 = { workspace = true }
 bevy = { workspace = true, features = [
-    "2d_bevy_render",
+    "3d_bevy_render",
     "default_app",
     "picking",
     "scene",
@@ -21,8 +20,10 @@ bevy = { workspace = true, features = [
     "wayland",
     "x11",
 ] }
+bevy_renet2 = { workspace = true }
 bevy_replicon = { workspace = true, features = ["server"] }
 bevy_replicon_renet2 = { workspace = true, features = ["server"] }
+bevy_seedling = { workspace = true }
 
 shared = { path = "../shared" }
 

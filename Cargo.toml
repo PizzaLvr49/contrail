@@ -1,6 +1,6 @@
 [workspace]
 resolver = "3"
-members = ["crates/server", "crates/client", "crates/shared"]
+members = ["crates/client", "crates/server", "crates/shared"]
 default-members = ["crates/server", "crates/client"]
 
 [workspace.dependencies]
@@ -13,6 +13,9 @@ bevy = { version = "0.18.1", features = [
     "scene",
 ], default-features = false }
 bevy_malek_async = { git = "https://github.com/MalekiRe/bevy_malek_async", branch = "backport-for-sheepman" }
+bevy_renet2 = { version = "0.15.0", default-features = false, features = [
+    "steam",
+] }
 bevy_replicon = { version = "0.40.3", default-features = false, features = [
     "scene",
 ] }
@@ -20,14 +23,21 @@ bevy_replicon_renet2 = { version = "0.17.0", features = [
     "netcode",
     "steam",
 ], default-features = false }
-bevy_renet2 = { version = "0.15.0", default-features = false, features = [
-    "steam",
-] }
+bevy_seedling = "0.7.2"
+clap = { version = "4.6.1", features = ["derive", "env"] }
 dotenvy = "0.15.7"
+shared = { path = "crates/shared" }
 sqlx = { version = "0.9.0", features = ["postgres", "runtime-smol"] }
 steamworks = "0.13.1"
-clap = { version = "4.6.1", features = ["derive", "env"] }
-shared = { path = "crates/shared" }
+
+[workspace.lints.clippy]
+pedantic = { level = "warn", priority = -1 }
+nursery = { level = "warn", priority = -1 }
+allow_attributes_without_reason = "forbid"
+
+type_complexity = "allow"
+too_many_arguments = "allow"
+needless_pass_by_value = "allow"
 
 [patch.crates-io]
 renet2 = { git = "https://github.com/PizzaLvr49/renet2", branch = "dev" }
@@ -44,12 +54,3 @@ strip = "debuginfo"
 lto = "fat"
 panic = "abort"
 codegen-units = 1
-
-[workspace.lints.clippy]
-pedantic = { level = "warn", priority = -1 }
-nursery = { level = "warn", priority = -1 }
-allow_attributes_without_reason = "forbid"
-
-type_complexity = "allow"
-too_many_arguments = "allow"
-needless_pass_by_value = "allow"
