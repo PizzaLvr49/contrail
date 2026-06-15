@@ -37,12 +37,12 @@ fn main() {
 
     App::new()
         .insert_resource(Args::parse())
+        .init_state::<AppState>()
         .add_plugins(DefaultPlugins)
         .add_plugins(AsyncPlugin)
         .add_plugins(RepliconPlugins)
         .add_plugins(RepliconRenetPlugins)
         .add_plugins(SteamworksServerPlugin)
-        .init_state::<AppState>()
         .add_systems(Startup, spawn_db_task)
         .add_systems(Update, async_world_sync_point::<DbSyncPoint>)
         .add_systems(OnEnter(AppState::ConnectingSteam), init_steam_server)

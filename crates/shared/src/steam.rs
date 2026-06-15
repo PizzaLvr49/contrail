@@ -132,6 +132,7 @@ pub struct SteamworksServerPlugin;
 impl Plugin for SteamworksServerPlugin {
     fn build(&self, app: &mut App) {
         app.configure_sets(First, SteamworksServerSystem::RunCallbacks)
+            .add_message::<SteamworksEvent>()
             .add_systems(
                 First,
                 run_steam_server_callbacks.in_set(SteamworksServerSystem::RunCallbacks),
