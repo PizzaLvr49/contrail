@@ -1,12 +1,13 @@
 use std::{ops::Deref, sync::Mutex};
 
-use bevy::app::{App, First, Plugin};
-use bevy::ecs::schedule::common_conditions::resource_exists;
-use bevy::ecs::{
-    message::Message,
-    prelude::{MessageWriter, Resource},
-    schedule::{IntoScheduleConfigs, SystemSet},
-    system::Res,
+use bevy::{
+    app::{App, First, Plugin},
+    ecs::{
+        message::Message,
+        prelude::{MessageWriter, Resource},
+        schedule::{IntoScheduleConfigs, SystemSet},
+        system::{If, Res},
+    },
 };
 
 pub use steamworks::*;
@@ -133,9 +134,7 @@ impl Plugin for SteamworksServerPlugin {
         app.configure_sets(First, SteamworksServerSystem::RunCallbacks)
             .add_systems(
                 First,
-                run_steam_server_callbacks
-                    .in_set(SteamworksServerSystem::RunCallbacks)
-                    .run_if(resource_exists::<SteamServer>),
+                run_steam_server_callbacks.in_set(SteamworksServerSystem::RunCallbacks),
             );
     }
 }
@@ -147,6 +146,11 @@ pub enum SteamworksServerSystem {
     RunCallbacks,
 }
 
-fn run_steam_server_callbacks(server: Res<SteamServer>) {
-    server.run_callbacks();
+fn run_steam_server_callbacks(
+    If(server): If<Res<SteamServer>>,
+    mut output: MessageWriter<SteamworksEvent>,
+) {
+    server.process_callbacks(|callback| {
+        output.write(SteamworksEvent::CallbackResult(callback));
+    });
 }
