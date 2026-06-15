@@ -28,6 +28,11 @@ steamworks = "0.13.1"
 clap = { version = "4.6.1", features = ["derive", "env"] }
 shared = { path = "crates/shared" }
 
+[patch.crates-io]
+renet2 = { git = "https://github.com/PizzaLvr49/renet2", branch = "dev" }
+renet2_steam = { git = "https://github.com/PizzaLvr49/renet2", branch = "dev" }
+bevy_renet2 = { git = "https://github.com/PizzaLvr49/renet2", branch = "dev" }
+
 [profile.dev.package."*"]
 opt-level = 3
 

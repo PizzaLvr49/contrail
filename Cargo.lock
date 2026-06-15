@@ -1433,8 +1433,7 @@ dependencies = [
 [[package]]
 name = "bevy_renet2"
 version = "0.15.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "76cbba6aff2d461ccce2bb3a62fa328a2f39aeb6d61a37750c098396b7a6c242"
+source = "git+https://github.com/PizzaLvr49/renet2?branch=dev#3920f16fc44b1c69e910ac738f719e284be72bc4"
 dependencies = [
  "bevy_app",
  "bevy_ecs",
@@ -5017,8 +5016,7 @@ checksum = "19b30a45b0cd0bcca8037f3d0dc3421eaf95327a17cad11964fb8179b4fc4832"
 [[package]]
 name = "renet2"
 version = "0.15.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "689381686b0760f174e973d038df220eec2834d64345c2b609212d40679dc274"
+source = "git+https://github.com/PizzaLvr49/renet2?branch=dev#3920f16fc44b1c69e910ac738f719e284be72bc4"
 dependencies = [
  "bevy_ecs",
  "bytes",
@@ -5029,8 +5027,7 @@ dependencies = [
 [[package]]
 name = "renet2_netcode"
 version = "0.15.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "4bda5b3ebbfacba2976a9825dac8cd57efadc2a55a98fc334fb504fa714d1200"
+source = "git+https://github.com/PizzaLvr49/renet2?branch=dev#3920f16fc44b1c69e910ac738f719e284be72bc4"
 dependencies = [
  "bevy_ecs",
  "bytes",
@@ -5045,8 +5042,7 @@ dependencies = [
 [[package]]
 name = "renet2_steam"
 version = "0.15.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "33c9ec65e7ee46edfe3441b191fcf8d2fe3aa0abe26174115f52a00c09b1b003"
+source = "git+https://github.com/PizzaLvr49/renet2?branch=dev#3920f16fc44b1c69e910ac738f719e284be72bc4"
 dependencies = [
  "bevy_ecs",
  "log",
@@ -5057,8 +5053,7 @@ dependencies = [
 [[package]]
 name = "renetcode2"
 version = "0.15.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "0b908e79c2c22d075bf4307a36f96bff3ebfedaba40b377d70b2c2e899e6a53c"
+source = "git+https://github.com/PizzaLvr49/renet2?branch=dev#3920f16fc44b1c69e910ac738f719e284be72bc4"
 dependencies = [
  "chacha20poly1305",
  "log",

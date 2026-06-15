@@ -162,9 +162,10 @@ fn init_transport_server(
     let steam_config = SteamServerConfig {
         max_clients: args.max_clients,
         access_permission: AccessPermission::Public,
+        port: args.server_addr.port() as i32,
     };
 
-    match SteamServerTransport::new(&instance.client, steam_config) {
+    match SteamServerTransport::new(&instance.server, steam_config) {
         Ok(transport) => {
             commands.insert_resource(renet_server);
             commands.insert_resource(transport);

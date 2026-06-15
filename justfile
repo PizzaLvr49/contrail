@@ -10,15 +10,15 @@ default:
 # Configures env, db, and sqlx-cli
 setup: env install-tools db-up
     @echo "Waiting for PostgreSQL..."
-    @until docker exec {{CONTAINER}} pg_isready -U postgres >/dev/null 2>&1; do \
+    @until docker exec {{ CONTAINER }} pg_isready -U postgres >/dev/null 2>&1; do \
         sleep 1; \
     done
-    DATABASE_URL={{DB_URL}} sqlx database setup
+    DATABASE_URL={{ DB_URL }} sqlx database setup
 
 # Creates .env if it doesn't exist
 env:
     @if [ ! -f .env ]; then \
-        echo 'DATABASE_URL="{{DB_URL}}"' > .env; \
+        echo 'DATABASE_URL="{{ DB_URL }}"' > .env; \
         echo "Created .env"; \
     else \
         echo ".env already exists"; \
@@ -26,20 +26,20 @@ env:
 
 # Runs the server
 run-server *args:
-    cargo run -p server -- {{args}}
+    cargo run -p server {{ args }}
 
 # Runs the client
 run-client *args:
-    cargo run -p client -- {{args}}
+    cargo run -p client {{ args }}
 
 # Starts the local PostgreSQL container
 db-up:
-    @if docker ps -a --format '{{"{{"}}.Names{{"}}"}}' | grep -qx {{CONTAINER}}; then \
+    @if docker ps -a --format '{{ "{{" }}.Names{{ "}}" }}' | grep -qx {{ CONTAINER }}; then \
         echo "Container already exists, starting it..."; \
-        docker start {{CONTAINER}} >/dev/null; \
+        docker start {{ CONTAINER }} >/dev/null; \
     else \
         docker run \
-            --name {{CONTAINER}} \
+            --name {{ CONTAINER }} \
             -e POSTGRES_DB=contrail_dev \
             -e POSTGRES_USER=postgres \
             -e POSTGRES_PASSWORD=1234 \
@@ -49,7 +49,7 @@ db-up:
 
 # Stops and removes the local database
 db-down:
-    -docker rm -f {{CONTAINER}}
+    -docker rm -f {{ CONTAINER }}
 
 # Runs migrations
 migrate:
