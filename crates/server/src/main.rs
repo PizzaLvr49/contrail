@@ -131,6 +131,7 @@ fn init_steam_server(
         "0",
     ) {
         Ok((server, client)) => {
+            server.set_dedicated_server(true);
             server.log_on_anonymous();
             server.enable_heartbeats(true);
             server.set_max_players(args.max_clients as i32);
