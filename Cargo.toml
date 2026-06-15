@@ -10,6 +10,7 @@ bevy = { version = "0.18.1", features = [
     "bevy_state",
     "multi_threaded",
     "reflect_auto_register",
+    "scene",
 ], default-features = false }
 bevy_malek_async = { git = "https://github.com/MalekiRe/bevy_malek_async", branch = "backport-for-sheepman" }
 bevy_replicon = { version = "0.40.3", default-features = false, features = [

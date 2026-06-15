@@ -1,7 +1,7 @@
 use bevy::{prelude::*, tasks::IoTaskPool};
 use bevy_malek_async::prelude::*;
+use shared::steam::{Server, ServerMode, SteamClient, SteamServer, SteamworksServerPlugin};
 use sqlx::PgPool;
-use steamworks::{Client, Server, ServerMode};
 
 use bevy_renet2::steam::{AccessPermission, SteamServerConfig, SteamServerTransport};
 use bevy_replicon::prelude::*;
@@ -41,15 +41,10 @@ fn main() {
         .add_plugins(AsyncPlugin)
         .add_plugins(RepliconPlugins)
         .add_plugins(RepliconRenetPlugins)
+        .add_plugins(SteamworksServerPlugin)
         .init_state::<AppState>()
         .add_systems(Startup, spawn_db_task)
-        .add_systems(
-            Update,
-            (
-                async_world_sync_point::<DbSyncPoint>,
-                run_steam_callbacks.run_if(resource_exists::<SteamServerInstance>),
-            ),
-        )
+        .add_systems(Update, async_world_sync_point::<DbSyncPoint>)
         .add_systems(OnEnter(AppState::ConnectingSteam), init_steam_server)
         .add_systems(
             OnEnter(AppState::ConfiguringTransport),
@@ -105,12 +100,6 @@ async fn setup_db(async_world: AsyncWorld, database_url: String) -> Result<()> {
     Ok(())
 }
 
-#[derive(Resource)]
-pub struct SteamServerInstance {
-    pub server: Server,
-    pub client: Client,
-}
-
 fn init_steam_server(
     mut commands: Commands,
     args: Res<Args>,
@@ -136,7 +125,8 @@ fn init_steam_server(
             server.enable_heartbeats(true);
             server.set_max_players(args.max_clients as i32);
 
-            commands.insert_resource(SteamServerInstance { server, client });
+            commands.insert_resource(SteamServer(server));
+            commands.insert_resource(SteamClient(client));
             info!("steamworks initialized successfully");
             next_state.set(AppState::ConfiguringTransport);
         }
@@ -151,7 +141,7 @@ fn init_transport_server(
     channels: Res<RepliconChannels>,
     args: Res<Args>,
     mut state: ResMut<NextState<AppState>>,
-    instance: Res<SteamServerInstance>,
+    steam_server: Res<SteamServer>,
 ) {
     info!("initializing transport");
 
@@ -166,7 +156,7 @@ fn init_transport_server(
         port: args.server_addr.port() as i32,
     };
 
-    match SteamServerTransport::new(&instance.server, steam_config) {
+    match SteamServerTransport::new(&steam_server, steam_config) {
         Ok(transport) => {
             commands.insert_resource(renet_server);
             commands.insert_resource(transport);
@@ -178,8 +168,4 @@ fn init_transport_server(
             error!("Steam transport failed: {:?}", e);
         }
     }
-}
-
-fn run_steam_callbacks(server_instance: Res<SteamServerInstance>) {
-    server_instance.server.run_callbacks();
 }
