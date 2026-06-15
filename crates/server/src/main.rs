@@ -111,7 +111,11 @@ pub struct SteamServerInstance {
     pub client: Client,
 }
 
-fn init_steam_server(mut commands: Commands, args: Res<Args>) {
+fn init_steam_server(
+    mut commands: Commands,
+    args: Res<Args>,
+    mut next_state: ResMut<NextState<AppState>>,
+) {
     info!("starting steamworks");
 
     let IpAddr::V4(ipv4_addr) = args.server_addr.ip() else {
@@ -123,7 +127,7 @@ fn init_steam_server(mut commands: Commands, args: Res<Args>) {
         ipv4_addr,
         args.server_addr.port(),
         args.server_addr.port() + 1,
-        ServerMode::NoAuthentication,
+        ServerMode::Authentication,
         "0",
     ) {
         Ok((server, client)) => {
@@ -133,6 +137,7 @@ fn init_steam_server(mut commands: Commands, args: Res<Args>) {
 
             commands.insert_resource(SteamServerInstance { server, client });
             info!("steamworks initialized successfully");
+            next_state.set(AppState::ConfiguringTransport);
         }
         Err(e) => {
             error!("steam init failed: {:?}", e);
