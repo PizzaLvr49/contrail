@@ -21,8 +21,8 @@ bevy = { workspace = true, features = [
     "x11",
 ] }
 bevy_renet2 = { workspace = true }
-bevy_replicon = { workspace = true, features = ["server"] }
-bevy_replicon_renet2 = { workspace = true, features = ["server"] }
+bevy_replicon = { workspace = true, features = ["client"] }
+bevy_replicon_renet2 = { workspace = true, features = ["client"] }
 bevy_seedling = { workspace = true }
 
 shared = { path = "../shared" }

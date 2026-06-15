@@ -26,6 +26,7 @@ bevy_replicon_renet2 = { version = "0.17.0", features = [
 bevy_seedling = "0.7.2"
 clap = { version = "4.6.1", features = ["derive", "env"] }
 dotenvy = "0.15.7"
+serde = { version = "1.0.228", features = ["derive"] }
 shared = { path = "crates/shared" }
 sqlx = { version = "0.9.0", features = ["postgres", "runtime-smol"] }
 steamworks = "0.13.1"

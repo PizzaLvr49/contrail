@@ -1,6 +1,9 @@
 use bevy::{prelude::*, tasks::IoTaskPool};
 use bevy_malek_async::prelude::*;
-use shared::steam::{Server, ServerMode, SteamClient, SteamServer, SteamworksServerPlugin};
+use shared::{
+    SharedPlugin,
+    steam::{Server, ServerMode, SteamClient, SteamServer, SteamworksServerPlugin},
+};
 use sqlx::PgPool;
 
 use bevy_renet2::steam::{AccessPermission, SteamServerConfig, SteamServerTransport};
@@ -25,7 +28,7 @@ struct Args {
 
     /// Maximum number of connected clients.
     #[arg(long, env = "MAX_CLIENTS", default_value_t = 60)]
-    max_clients: usize,
+    max_clients: i32,
 
     /// Protocol ID for Renet.
     #[arg(long, env = "PROTOCOL_ID", default_value_t = 0)]
@@ -37,12 +40,13 @@ fn main() {
 
     App::new()
         .insert_resource(Args::parse())
-        .init_state::<AppState>()
         .add_plugins(DefaultPlugins)
         .add_plugins(AsyncPlugin)
         .add_plugins(RepliconPlugins)
         .add_plugins(RepliconRenetPlugins)
         .add_plugins(SteamworksServerPlugin)
+        .add_plugins(SharedPlugin)
+        .init_state::<AppState>()
         .add_systems(Startup, spawn_db_task)
         .add_systems(Update, async_world_sync_point::<DbSyncPoint>)
         .add_systems(OnEnter(AppState::ConnectingSteam), init_steam_server)
@@ -120,10 +124,14 @@ fn init_steam_server(
         "0",
     ) {
         Ok((server, client)) => {
+            server.set_product("Contrail");
+            server.set_game_description("Contrail Flight Simulator");
+            server.set_mod_dir("contrail");
+            server.set_game_tags("contrail");
             server.set_dedicated_server(true);
             server.log_on_anonymous();
             server.enable_heartbeats(true);
-            server.set_max_players(args.max_clients as i32);
+            server.set_max_players(args.max_clients);
 
             commands.insert_resource(SteamServer(server));
             commands.insert_resource(SteamClient(client));
@@ -151,7 +159,7 @@ fn init_transport_server(
     ));
 
     let steam_config = SteamServerConfig {
-        max_clients: args.max_clients,
+        max_clients: args.max_clients as usize,
         access_permission: AccessPermission::Public,
         port: args.server_addr.port() as i32,
     };
